@@ -1,3 +1,5 @@
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
@@ -26,9 +28,13 @@ class TransactionData(BaseModel):
     V1: float
     Amount: float
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome to the Credit Card Fraud Detection API!"}
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/", response_class=HTMLResponse)
+async def get_root():
+    with open("static/index.html", "r", encoding="utf-8") as f:
+        html_content = f.read()
+    return html_content
 
 @app.post("/predict/")
 async def predict(transaction: TransactionData):
@@ -51,3 +57,4 @@ async def predict(transaction: TransactionData):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
