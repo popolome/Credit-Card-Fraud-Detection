@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Fraud Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            font-size: 18px;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .fraud {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .non-fraud {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Credit Card Fraud Detection</h1>
+
+    <form id="fraudForm">
+        <label for="v1">V1:</label>
+        <input type="number" id="v1" name="v1" required>
+
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount" required>
+
+        <button type="submit">Predict Fraud</button>
+    </form>
+
+    <div id="result" class="result"></div>
+
+    <script>
+        const form = document.getElementById('fraudForm');
+        const resultEl = document.getElementById('result');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            // Get values from the form
+            const v1 = parseFloat(document.getElementById('v1').value);
+            const amount = parseFloat(document.getElementById('amount').value);
+
+            const apiUrl = 'https://credit-card-fraud-detection-kjbf.onrender.com/predict/';
+
+            try {
+                // Send data to FastAPI backend
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ V1: v1, Amount: amount })
+                });
+
+                // Check if the response is okay
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error('Error from API:', error);
+                    resultEl.textContent = `Error: ${JSON.stringify(error)}`;
+                    return;
+                }
+
+                // Get prediction data from the response
+                const data = await response.json();
+
+                // Show the result with color-coding based on the prediction
+                if (data["Random Forest Prediction"] === 1) {
+    resultEl.textContent = 'Fraud Detected!';
+    resultEl.className = 'result fraud';
+} else {
+    resultEl.textContent = 'No Fraud Detected.';
+    resultEl.className = 'result non-fraud';
+}
+
+            } catch (error) {
+                console.error('Network error:', error);
+                resultEl.textContent = `Network error: ${error.message}`;
+                resultEl.className = 'result';
+            }
+        });
+    </script>
+</body>
+</html>
